@@ -1,0 +1,133 @@
+.constant
+OBJREF  0x40
+.end-constant
+
+.main
+
+start:  LDC_W           OBJREF
+        BIPUSH          6
+        BIPUSH          -5
+        INVOKEVIRTUAL   imul
+
+        IRETURN
+
+.end-main
+
+.method imul(x, y)
+
+.var
+abs_x
+abs_y
+m
+c
+o
+i
+.end-var
+
+imul:   BIPUSH      0           // push 0 to top of stack
+        ISTORE      m           // store top of stack into m
+
+        ILOAD       x           // load x to top of stack
+        IFEQ        ret         // if top of stack equals 0, branch to ret branch
+        ILOAD       y           // else, load y to top of stack
+        IFEQ        ret         // if top of stack equals 0, branch to ret branch
+
+abs_x:  ILOAD       x
+        IFLT        neg_x
+        ILOAD       x
+        ISTORE      abs_x
+        GOTO        abs_y
+
+neg_x:  ILOAD       x
+        INEG
+        ISTORE      abs_x
+
+abs_y:  ILOAD       y
+        IFLT        neg_y
+        ILOAD       y
+        ISTORE      abs_y
+        GOTO        min
+
+neg_y:  ILOAD       y
+        INEG
+        ISTORE      abs_y
+
+        // x == y
+min:    ILOAD       abs_x
+        ILOAD       abs_y
+        IF_ICMPEQ   b_eq
+
+        // x < y
+        ILOAD       abs_x
+        ILOAD       abs_y
+        ISUB
+        IFLT        x_lt_y
+
+        // x > y
+        ILOAD       abs_y
+        ISTORE      c
+        ILOAD       abs_x
+        ISTORE      o
+        BIPUSH      0
+        ISTORE      i
+        GOTO        test
+
+b_eq:   ILOAD       abs_x
+        ISTORE      c
+        ILOAD       abs_y
+        ISTORE      o
+        GOTO        loop
+
+x_lt_y: ILOAD       abs_x
+        ISTORE      c
+        ILOAD       abs_y
+        ISTORE      o
+
+loop:   ILOAD       m
+        ILOAD       o
+        IADD    
+        ISTORE      m
+
+        // i++
+        ILOAD       i
+        BIPUSH      1
+        IADD
+        ISTORE      i
+
+test:   ILOAD       c
+        ILOAD       i
+        ISUB
+        IFEQ        test1
+        GOTO        loop
+
+if:     ILOAD       m
+        INEG
+        ISTORE      m
+        GOTO        ret
+
+        // x < 0
+test1:  ILOAD       x
+        IFLT        test2
+        ILOAD       y
+        IFLT        if
+        GOTO        ret
+
+        // x < 0 check y < 0
+test2:  ILOAD       y
+        IFLT        ret
+        GOTO        if
+
+ret:    ILOAD       m
+        IRETURN
+
+.end-method
+
+
+
+
+
+
+
+.method idiv(x, y, return_type)
+
+.end-method
