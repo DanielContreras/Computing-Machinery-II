@@ -109,13 +109,3 @@ ret:    ILOAD       m           // push m to top of stack
         IRETURN                 // return m to caller
 
 .end-method
-
-
-
-
-
-
-
-.method idiv(x, y, return_type)
-
-.end-method
