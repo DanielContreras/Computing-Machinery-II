@@ -4,19 +4,19 @@ OBJREF  0x40
 
 .main
 
-start:  LDC_W           OBJREF
-        BIPUSH          6
-        BIPUSH          -5
-        INVOKEVIRTUAL   imul
+start:  LDC_W           OBJREF  // push object reference to stack
+        BIPUSH          3       // push first parameter to stack
+        BIPUSH          2       // push second parameter to stack
+        INVOKEVIRTUAL   imul    // call imul 
 
-        IRETURN
+        IRETURN                 // end of program
 
 .end-main
 
 .method imul(x, y)
 
 .var
-abs_x
+abs_x                          
 abs_y
 m
 c
@@ -32,93 +32,81 @@ imul:   BIPUSH      0           // push 0 to top of stack
         ILOAD       y           // else, load y to top of stack
         IFEQ        ret         // if top of stack equals 0, branch to ret branch
 
-abs_x:  ILOAD       x
-        IFLT        neg_x
-        ILOAD       x
-        ISTORE      abs_x
-        GOTO        abs_y
+abs_x:  ILOAD       x           // push x to top of stack
+        IFLT        neg_x       // if x < 0, branch to neg_x
+        ILOAD       x           // else, push x to to top of stack
+        ISTORE      abs_x       // store top of stack in abs_x
+        GOTO        abs_y       // branch to abs_y
 
-neg_x:  ILOAD       x
-        INEG
-        ISTORE      abs_x
+neg_x:  ILOAD       x           // push x to top of stack
+        INEG                    // negate x (get abs value of x)
+        ISTORE      abs_x       // store top of stack in abs_x
 
-abs_y:  ILOAD       y
-        IFLT        neg_y
-        ILOAD       y
-        ISTORE      abs_y
-        GOTO        min
+abs_y:  ILOAD       y           // push y to top of stack
+        IFLT        neg_y       // if y < 0, branch to neg_y
+        ILOAD       y           // push y to top of stack
+        ISTORE      abs_y       // store top of stack in abs_y
+        GOTO        min         // branch to min
 
-neg_y:  ILOAD       y
-        INEG
-        ISTORE      abs_y
+neg_y:  ILOAD       y           // push y to top of stack
+        INEG                    // negate y (get abs value of y)
+        ISTORE      abs_y       // store top of stack in abs_y
 
-        // x == y
-min:    ILOAD       abs_x
-        ILOAD       abs_y
-        IF_ICMPEQ   b_eq
+min:    ILOAD       abs_x       // push abs_x to top of stack
+        ILOAD       abs_y       // push abs_y to top of stack
+        IF_ICMPEQ   x_min       // if abs_x == abs_y, branch to x_min
 
-        // x < y
-        ILOAD       abs_x
-        ILOAD       abs_y
-        ISUB
-        IFLT        x_lt_y
+        ILOAD       abs_x       // else, push abs_x to top of stack
+        ILOAD       abs_y       // push abs_y to top of stack
+        ISUB                    // push (abs_x - abs_y) to top of stack
+        IFLT        x_min       // if (abs_x - abs_y) < 0, branch to x_min
 
-        // x > y
-        ILOAD       abs_y
-        ISTORE      c
-        ILOAD       abs_x
-        ISTORE      o
-        BIPUSH      0
-        ISTORE      i
-        GOTO        test
+y_min:  ILOAD       abs_y       // else, push abs_y to top of stack
+        ISTORE      c           // store top of stack in c (min is y)
+        ILOAD       abs_x       // push abs_x to top of stack
+        ISTORE      o           // store top of stack in o (max is x)
+        BIPUSH      0           // push 0 to top of stack
+        ISTORE      i           // store top of stack in i (i = 0)
+        GOTO        test        // branch to test
 
-b_eq:   ILOAD       abs_x
-        ISTORE      c
-        ILOAD       abs_y
-        ISTORE      o
-        GOTO        loop
+x_min:  ILOAD       abs_x       // push abs_x to top of stack
+        ISTORE      c           // store top of stack in c (min is x)
+        ILOAD       abs_y       // push abs_y to top of stack
+        ISTORE      o           // store top of stack in o (max is y)
 
-x_lt_y: ILOAD       abs_x
-        ISTORE      c
-        ILOAD       abs_y
-        ISTORE      o
+loop:   ILOAD       m           // push m to top of stack
+        ILOAD       o           // push o to top of stack
+        IADD                    // push (m + o) to top of stack
+        ISTORE      m           // store top of stack in m
 
-loop:   ILOAD       m
-        ILOAD       o
-        IADD    
-        ISTORE      m
+        ILOAD       i           // push i to top of stack
+        BIPUSH      1           // push 1 to top of stack
+        IADD                    // push i++ to top of stack
+        ISTORE      i           // store top of stack in i
 
-        // i++
-        ILOAD       i
-        BIPUSH      1
-        IADD
-        ISTORE      i
+test:   ILOAD       c           // push c to top of stack
+        ILOAD       i           // push i to top of stack
+        ISUB                    // push (c-i) to top of stack
+        IFEQ        test1       // if (c-i) = 0, branch to test1
+        GOTO        loop        // else, branch to loop
 
-test:   ILOAD       c
-        ILOAD       i
-        ISUB
-        IFEQ        test1
-        GOTO        loop
+if:     ILOAD       m           // push m to top of stack
+        INEG                    // negate m 
+        ISTORE      m           // store top of stack in m (-m)
+        GOTO        ret         // branch to ret
 
-if:     ILOAD       m
-        INEG
-        ISTORE      m
-        GOTO        ret
+test1:  ILOAD       x           // push x to top of stack
+        IFLT        test2       // if (x < 0), branch to test2
+        ILOAD       y           // else, push y to top of stack
+        IFLT        if          // if (y < 0), branch to if
+        GOTO        ret         // else, branch to ret
 
-        // x < 0
-test1:  ILOAD       x
-        IFLT        test2
-        ILOAD       y
-        IFLT        if
-        GOTO        ret
+test2:  ILOAD       y           // push y to top of stack
+        IFLT        ret         // if (y < 0), branch to ret
+        GOTO        if          // else, branch to if
 
-        // x < 0 check y < 0
-test2:  ILOAD       y
-        IFLT        ret
-        GOTO        if
-
-ret:    ILOAD       m
-        IRETURN
+ret:    ILOAD       m           // push m to top of stack
+        IRETURN                 // return m to caller
 
 .end-method
 
