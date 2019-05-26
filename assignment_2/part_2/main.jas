@@ -1,8 +1,8 @@
 .main
 
-    // BIPUSH  0   // push first parameter to stack
-    // BIPUSH  3   // push second parameter to stack
-    // IMUL        // pop top 2 words from stack and multiply using extended instruction
+    BIPUSH  3   // push first parameter to stack
+    BIPUSH  3   // push second parameter to stack
+    IMUL        // pop top 2 words from stack and multiply using extended instruction
 
     BIPUSH  8   // push first parameter to stack
     BIPUSH  3   // push second parameter to stack
