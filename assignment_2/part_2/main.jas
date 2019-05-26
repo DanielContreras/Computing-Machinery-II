@@ -1,0 +1,13 @@
+.constant
+OBJREF  0x40
+.end-constant
+
+.main
+
+    BIPUSH  0   // push first parameter to stack
+    BIPUSH  3   // push second parameter to stack
+    IMUL        // 
+
+    IRETURN     // end of program
+
+.end-main
