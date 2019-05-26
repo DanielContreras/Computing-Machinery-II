@@ -45,6 +45,7 @@
 .label	in1		        0xFC
 .label	ineg1		    0xB2
 .label  imul1           0xB3
+.label  idiv1           0xB4
 
 // default instruction to place in any unused addresses of the control store
 .default	goto err1
@@ -242,11 +243,23 @@ ineg1	MAR = SP			                            // set MAR to top word
 ineg2	MDR = NOT TOS;                                  // set MDR to the negation of TOS
 ineg3	MDR = TOS = MDR + 1; wr; goto Main1             // write MDR + 1 (add 1 to MDR to get 2's compliment) to MDR and update TOS
 
-imul1 MAR = SP = SP - 1; rd                             // read in next-to-top word on stack
-imul2 OPC = 0                                           // set OPC to 0
-imul3 H = MDR                                           // set H to MDR (value read in from next-to-top word on stack)
-imul4 Z = TOS; if (Z) goto imul8; else goto imul5       // if TOS is 0 goto imul8 or continue to next label
-imul5 OPC = OPC + H                                     // set opc to itself + the value in H
-imul6 MDR = MDR + H                                     // set MDR to itself + the value in H
-imul7 TOS = TOS - 1; goto imul4                         // set TOS to itself - 1 then branch to top of loop (imul4)
-imul8 MDR = TOS = OPC; wr; goto Main1                   // write OPC (now contains the product) to both MDR and TOS and branch to Main1
+imul1   MAR = SP = SP - 1; rd                           // read in next-to-top word on stack
+imul2   OPC = 0                                         // set OPC to 0
+imul3   H = MDR                                         // set H to MDR (value read in from next-to-top word on stack)
+imul4   Z = TOS; if (Z) goto imul8; else goto imul5     // if TOS is 0 goto imul8 or continue to next label
+imul5   OPC = OPC + H                                   // set opc to itself + the value in H
+imul6   MDR = MDR + H                                   // set MDR to itself + the value in H
+imul7   TOS = TOS - 1; goto imul4                       // set TOS to itself - 1 then branch to top of loop (imul4)
+imul8   MDR = TOS = OPC; wr; goto Main1                 // write OPC (now contains the product) to both MDR and TOS and branch to Main1
+
+idiv1   MAR = SP = SP - 1; rd                               // read in next-to-top word on stack
+idiv2   H = TOS                                             // store top of stack in H
+idiv3   OPC = 0                                             // set OPC to 0 (quotient)
+idiv4   N = MDR - H; if (N) goto idiv7; else goto idiv5     // if MDR - H (int1 - int2) < 0 then exit loop, else go to idiv5 (loop body)
+idiv5   MDR = MDR - H                                       // subtract H from MDR and store result back in MDR (r = r - int2)
+idiv6   OPC = OPC + 1; goto idiv4                           // increment OPC by 1 (q++) then branch to start of loop
+idiv7   MAR = SP + 1                                        // increment SP by 1 to write remainder in next-to-top position in stack
+idiv8   H = MDR; wr                                         // write MDR (remainder) to next-to-top position 
+idiv9   TOS = OPC                                           // update TOS to OPC (quotient)
+idiv10  MDR = TOS                                           // set MDR to TOS
+idiv11  MAR = SP; wr; goto Main1                            // write MDR to SP (quotient on top of stack)

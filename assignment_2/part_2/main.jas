@@ -1,12 +1,12 @@
-.constant
-OBJREF  0x40
-.end-constant
-
 .main
 
-    BIPUSH  0   // push first parameter to stack
+    // BIPUSH  0   // push first parameter to stack
+    // BIPUSH  3   // push second parameter to stack
+    // IMUL        // pop top 2 words from stack and multiply using extended instruction
+
+    BIPUSH  8   // push first parameter to stack
     BIPUSH  3   // push second parameter to stack
-    IMUL        // 
+    IDIV        // pop top 2 words from stack and divide using extended instruction
 
     IRETURN     // end of program
 
